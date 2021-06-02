@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!-- 
+        @Author : Sunil K Sundaram
+        @Date   : 10-Oct-2020
+        @Email  : sunil.ks@gmail.com
+    -->
+	<modelVersion>4.0.0</modelVersion>
+    <groupId>com.sunil.common</groupId>
+    <artifactId>mvn2ng10</artifactId>
+    <version>1.0</version>
+    <name>mvn2ng10</name>
+    <packaging>war</packaging>
+
+    <!-- we could create individual properties similar to variables -->
+    <!-- <properties>
+        <ui-base-dir>iemrdash</ui-base-dir>
+    </properties> -->
+
+    <!-- install the necessary node_modules & compile in prod mode -->
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                <filesets>
+                    <fileset>
+                    <directory>dist</directory>
+                    <!-- if any that needs to be included or excluded     -->
+                    <!-- using name in both would be a crime - pls avoid! -->
+                    <!-- <includes>
+                        <include>**/*.tmp</include>
+                        <include>**/*.log</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/important.log</exclude>
+                        <exclude>**/another-important.log</exclude>
+                    </excludes> -->
+                    <followSymlinks>false</followSymlinks>
+                    </fileset>
+                </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>running npm install</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>running npm install ---> ${build.timestamp}</echo>
+                                <echo>exec-dir: ${project.build.directory}</echo>
+                            </tasks>
+                            <executable>npm</executable>
+                            <!--<workingDirectory>${basedir}/${ui-base-dir}</workingDirectory>  --> 
+                            <arguments>
+                                <argument>install</argument>
+                                <!-- use save-dev or save if you understand the consequences, else -->
+                                <!-- please leave them alone & add appropriate npm dependencies in package.json -->
+                                <!-- <argument> </argument> -->
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>running ng build --prod</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <echo>running ng build --prod ---> ${build.timestamp}</echo>
+                                <echo>exec-dir: ${project.build.directory}</echo>
+                                <echo>dist-dir: ${project.build.outputDirectory}</echo>
+                            </tasks>
+                            <!-- incase working dir is different use below -->
+                            <!--<workingDirectory>${basedir}/${ui-base-dir}</workingDirectory>  -->    
+                            <executable>ng</executable>
+                            <arguments>
+                                <argument>build</argument>
+                                <argument>--prod</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- use following incase resources from other dirs -->
+            <!--<plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/WEB-INF</outputDirectory>
+                            <resources>          
+                                <resource>
+                                    <directory>dist</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>              
+                        </configuration>            
+                    </execution>
+                </executions>
+            </plugin> -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.4.2</version>
+                <executions>
+                    <execution>
+                        <id>default-copy-resources</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <overwrite>true</overwrite>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/</outputDirectory>
+                            <resources>
+                                <resource>
+                                <directory>${project.basedir}/dist</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webResources>
+                        <resource>
+                        <!-- this is relative to the pom.xml directory -->
+                        <directory>dist</directory>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
